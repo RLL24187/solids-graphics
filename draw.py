@@ -79,7 +79,8 @@ def scanline_convert(polygons, i, screen, zbuffer ):
     #It's also not guaranteed that x0 is the left point or that x1 is the right point, you'll need some way to differentiate and maybe swap left and right side
     if (ym != yb):
         while y < math.ceil(ym):
-            draw_line(x0, y, z0, x1, y, z1, screen, zbuffer, color)
+            # draw_line(x0, y, z0, x1, y, z1, screen, zbuffer, color)
+            draw_scanline(x0, y, z0, x1, y, z1, screen, zbuffer, color)
             #assuming that I draw from the ceil of x0 to ceil of x1, not inclusive of ceil of x1
             #move the endpoints
             x0+= dx0
@@ -89,7 +90,8 @@ def scanline_convert(polygons, i, screen, zbuffer ):
             y+= 1
     if (yt != ym):
         while y < math.ceil(yt):
-            draw_line(x0, y, z0, x2, y, z2, screen, zbuffer, color)
+            # draw_line(x0, y, z0, x2, y, z2, screen, zbuffer, color)
+            draw_scanline(x0, y, z0, x2, y, z2, screen, zbuffer, color)
             #assuming that I draw from the ceil of x0 to ceil of x2, not inclusive of ceil of x2
             #move the endpoints
             x0+= dx0
@@ -353,6 +355,20 @@ def add_point( matrix, x, y, z=0 ):
     matrix.append( [x, y, z, 1] )
 
 
+def draw_scanline(x0, y0, z0, x1, y1, z1, screen, zbuffer, color):
+    #swap points if going right -> left
+    if x0 > x1:
+        xt = x0
+        yt = y0
+        x0 = x1
+        y0 = y1
+        x1 = xt
+        y1 = yt
+    x = x0
+    y = y0
+    while (x <= math.ceil(x1)):
+        plot(screen, zbuffer, color, int(x), int(y), 0)
+        x+=1
 
 def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
 
