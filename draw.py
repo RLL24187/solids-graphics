@@ -1,15 +1,116 @@
 from display import *
 from matrix import *
 from gmath import *
+import math
+
+def fxn(x):
+    return x[1]
+def sortpts(polygons, i):
+    #returns array of sorted pts by y value [top, middle, bottom pts]
+    pts = [polygons[i], polygons[i + 1], polygons[i + 2]]
+    # print("Sorted with poly: ", sorted(pts, key = fxn))
+    pts.sort(key = fxn, reverse = True)
+    # print("Sorted with sort: ",pts)
+    return pts
+# /*======== void scanline_convert() ==========
+#   Inputs: struct matrix *points
+#           int i
+#           screen s
+#           zbuffer zb
+#   Returns:
+#   Fills in polygon i by drawing consecutive horizontal (or vertical) lines.
+#   Color should be set differently for each polygon.
+#   ====================*/
 
 def scanline_convert(polygons, i, screen, zbuffer ):
-    pass
+    if (i / 3 % 6) == 0:
+        color = [255, 120, 0] #orange
+    elif (i / 3 % 6) == 1:
+        color = [255, 0, 120] #lime green
+    elif (i / 3 % 6) == 2:
+        color = [0, 255, 120] #hot pink
+    elif (i / 3 % 6) == 3:
+        color = [120, 255, 0] #yellow
+    elif (i / 3 % 6) == 4:
+        color = [0, 120, 255]
+    elif (i / 3 % 6) == 5:
+        color = [120, 0, 255]
+    pts = sortpts(polygons, i)
+    top = pts[0]
+    mid = pts[1]
+    bot = pts[2]
+    xt = top[0]
+    xm = mid[0]
+    xb = bot[0]
+    yt = top[1]
+    ym = mid[1]
+    yb = bot[1]
+    zt = top[2]
+    zm = mid[2]
+    zb = bot[2]
+
+    dx0 = (xt - xb) / (yt - yb)    # top - bot
+    dz0 = (zt - zb) / (yt - yb)
+    #Special case: when ym = yb
+    if (ym != yb):
+        dx1_b = (xm - xb) / (ym - yb)  # mid - bot
+        dz1_b = (zm - zb) / (ym - yb)
+    #Special case: when yt = ym
+    if (yt != ym):
+        dx1_t = (xt - xm) / (yt - ym)  # top - mid
+        dz1_t = (zt - zm) / (yt - ym)
+
+    yOffset0 = math.ceil(yb) - yb
+    yOffset1 = math.ceil(ym) - ym
+
+    x0 = xb + (yOffset0 * dx0)
+    z0 = zb + (yOffset0 * dz0)
+    if (ym != yb):
+        x1 = xb + (yOffset0 * dx1_b)
+        z1 = zb + (yOffset0 * dz1_b)
+    if (yt != ym):
+        x2 = xm + (yOffset1 * dx1_t)
+        z2 = zm + (yOffset1 * dz1_t)
+
+    y = math.ceil(yb)
+
+    #I've separated the code into two while loops here to emphasize the importance of stopping just before you get to the y-line;
+    #if you want to do this one loop, you must do the swap on exactly the correct loop
+    #It's also not guaranteed that x0 is the left point or that x1 is the right point, you'll need some way to differentiate and maybe swap left and right side
+    if (ym != yb):
+        while y < math.ceil(ym):
+            draw_line(x0, y, z0, x1, y, z1, screen, zbuffer, color)
+            #assuming that I draw from the ceil of x0 to ceil of x1, not inclusive of ceil of x1
+            #move the endpoints
+            x0+= dx0
+            x1+= dx1_b
+            z0+= dz0
+            z1+= dz1_b
+            y+= 1
+    if (yt != ym):
+        while y < math.ceil(yt):
+            draw_line(x0, y, z0, x2, y, z2, screen, zbuffer, color)
+            #assuming that I draw from the ceil of x0 to ceil of x2, not inclusive of ceil of x2
+            #move the endpoints
+            x0+= dx0
+            x2+= dx1_t
+            z0+= dz0
+            z2+= dz1_t
+            y+= 1
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
     add_point(polygons, x1, y1, z1)
     add_point(polygons, x2, y2, z2)
 
+# /*======== void draw_polygons() ==========
+#   Inputs:   struct matrix *polygons
+#             screen s
+#             color c
+#   Returns:
+#   Goes through polygons 3 points at a time, drawing
+#   lines connecting each points to create bounding triangles
+#   ====================*/
 def draw_polygons( polygons, screen, zbuffer, color ):
     if len(polygons) < 2:
         print('Need at least 3 points to draw')
@@ -21,27 +122,28 @@ def draw_polygons( polygons, screen, zbuffer, color ):
         normal = calculate_normal(polygons, point)[:]
         #print normal
         if normal[2] > 0:
-            draw_line( int(polygons[point][0]),
-                       int(polygons[point][1]),
-                       polygons[point][2],
-                       int(polygons[point+1][0]),
-                       int(polygons[point+1][1]),
-                       polygons[point+1][2],
-                       screen, zbuffer, color)
-            draw_line( int(polygons[point+2][0]),
-                       int(polygons[point+2][1]),
-                       polygons[point+2][2],
-                       int(polygons[point+1][0]),
-                       int(polygons[point+1][1]),
-                       polygons[point+1][2],
-                       screen, zbuffer, color)
-            draw_line( int(polygons[point][0]),
-                       int(polygons[point][1]),
-                       polygons[point][2],
-                       int(polygons[point+2][0]),
-                       int(polygons[point+2][1]),
-                       polygons[point+2][2],
-                       screen, zbuffer, color)
+            # draw_line( int(polygons[point][0]),
+            #            int(polygons[point][1]),
+            #            polygons[point][2],
+            #            int(polygons[point+1][0]),
+            #            int(polygons[point+1][1]),
+            #            polygons[point+1][2],
+            #            screen, zbuffer, color)
+            # draw_line( int(polygons[point+2][0]),
+            #            int(polygons[point+2][1]),
+            #            polygons[point+2][2],
+            #            int(polygons[point+1][0]),
+            #            int(polygons[point+1][1]),
+            #            polygons[point+1][2],
+            #            screen, zbuffer, color)
+            # draw_line( int(polygons[point][0]),
+            #            int(polygons[point][1]),
+            #            polygons[point][2],
+            #            int(polygons[point+2][0]),
+            #            int(polygons[point+2][1]),
+            #            polygons[point+2][2],
+            #            screen, zbuffer, color)
+            scanline_convert(polygons, point, screen, zbuffer)
         point+= 3
 
 
@@ -306,7 +408,7 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             loop_end = y
 
     while ( loop_start < loop_end ):
-        plot( screen, zbuffer, color, x, y, 0 )
+        plot( screen, zbuffer, color, int(x), int(y), 0 )
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
              (tall and ((A > 0 and d < 0) or (A < 0 and d > 0 )))):
 
@@ -318,4 +420,4 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             y+= dy_east
             d+= d_east
         loop_start+= 1
-    plot( screen, zbuffer, color, x, y, 0 )
+    plot( screen, zbuffer, color, int(x), int(y), 0 )
