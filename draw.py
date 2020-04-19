@@ -396,16 +396,17 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
     if x0 > x1:
         xt = x0
         yt = y0
+        zt = z0
         x0 = x1
         y0 = y1
+        z0 = z1
         x1 = xt
         y1 = yt
+        z1 = zt
 
     x = x0
     y = y0
     z = z0
-    pixels = int(x1) - int(x) + 1
-    dz = (z1 - z0) / pixels
     A = 2 * (y1 - y0)
     B = -2 * (x1 - x0)
     wide = False
@@ -418,6 +419,7 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
         dx_east = dx_northeast = 1
         dy_east = 0
         d_east = A
+        pixels = int(x1) - int(x0) + 1
         if ( A > 0 ): #octant 1
             d = A + B/2
             dy_northeast = 1
@@ -431,6 +433,7 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
         tall = True
         dx_east = 0
         dx_northeast = 1
+        pixels = int(y1) - int(y0) + 1
         if ( A > 0 ): #octant 2
             d = A/2 + B
             dy_east = dy_northeast = 1
@@ -445,10 +448,10 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             d_east = -1 * B
             loop_start = y1
             loop_end = y
-
-    while ( loop_start < loop_end ):
+    dz = (z1 - z0) / pixels
+    while ( loop_start < math.floor(loop_end) ):
         # if (z > zbuffer[int(y)][int(x)]):
-        plot( screen, zbuffer, color, int(x), int(y), z )
+        plot( screen, zbuffer, color, math.floor(x), int(y), z )
             # zbuffer[int(y)][int(x)] = z
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
              (tall and ((A > 0 and d < 0) or (A < 0 and d > 0 )))):
@@ -463,5 +466,5 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
         loop_start+= 1
         z+=dz
     # if (z > zbuffer[int(y)][int(x)]):
-    plot( screen, zbuffer, color, int(x), int(y), z )
+    plot( screen, zbuffer, color, math.floor(x), int(y), z )
         # zbuffer[int(y)][int(x)] = z
