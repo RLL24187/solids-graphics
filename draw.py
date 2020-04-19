@@ -384,9 +384,9 @@ def draw_scanline(x0, y0, z0, x1, y1, z1, screen, zbuffer, color):
     pixels = int(x1) - int(x) + 1
     dz = (z1 - z0) / pixels
     while (int(x) < int(x1)):
-        if(z > zbuffer[int(y0)][int(x)]):
-            plot(screen, zbuffer, color, int(x), int(y0), 0)
-            zbuffer[int(y0)][int(x)] = z
+        # if(z > zbuffer[int(y0)][int(x)]):
+        plot(screen, zbuffer, color, int(x), int(y0), z)
+            # zbuffer[int(y0)][int(x)] = z
         x+=1
         z+=dz
 
@@ -403,6 +403,9 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
 
     x = x0
     y = y0
+    z = z0
+    pixels = int(x1) - int(x) + 1
+    dz = (z1 - z0) / pixels
     A = 2 * (y1 - y0)
     B = -2 * (x1 - x0)
     wide = False
@@ -444,7 +447,9 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             loop_end = y
 
     while ( loop_start < loop_end ):
-        plot( screen, zbuffer, color, int(x), int(y), 0 )
+        # if (z > zbuffer[int(y)][int(x)]):
+        plot( screen, zbuffer, color, int(x), int(y), z )
+            # zbuffer[int(y)][int(x)] = z
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
              (tall and ((A > 0 and d < 0) or (A < 0 and d > 0 )))):
 
@@ -456,4 +461,7 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
             y+= dy_east
             d+= d_east
         loop_start+= 1
-    plot( screen, zbuffer, color, int(x), int(y), 0 )
+        z+=dz
+    # if (z > zbuffer[int(y)][int(x)]):
+    plot( screen, zbuffer, color, int(x), int(y), z )
+        # zbuffer[int(y)][int(x)] = z
