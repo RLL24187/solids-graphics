@@ -23,18 +23,30 @@ def sortpts(polygons, i):
 #   ====================*/
 
 def scanline_convert(polygons, i, screen, zbuffer ):
-    if (i / 3 % 6) == 0:
-        color = [255, 120, 0] #orange
-    elif (i / 3 % 6) == 1:
-        color = [255, 0, 120] #lime green
-    elif (i / 3 % 6) == 2:
-        color = [0, 255, 120] #hot pink
-    elif (i / 3 % 6) == 3:
-        color = [120, 255, 0] #yellow
-    elif (i / 3 % 6) == 4:
+    if (i / 3 % 12) == 0:
+        color = [255, 120, 0]
+    elif (i / 3 % 12) == 1:
+        color = [255, 0, 120]
+    elif (i / 3 % 12) == 2:
+        color = [0, 255, 120]
+    elif (i / 3 % 12) == 3:
+        color = [120, 255, 0]
+    elif (i / 3 % 12) == 4:
         color = [0, 120, 255]
-    elif (i / 3 % 6) == 5:
+    elif (i / 3 % 12) == 5:
         color = [120, 0, 255]
+    elif (i / 3 % 12) == 6:
+        color = [255, 255, 255]
+    elif (i / 3 % 12) == 7:
+        color = [150, 50, 255]
+    elif (i / 3 % 12) == 8:
+        color = [50, 150, 255]
+    elif (i / 3 % 12) == 9:
+        color = [255, 50, 150]
+    elif (i / 3 % 12) == 10:
+        color = [255, 255, 0]
+    elif (i / 3 % 12) == 11:
+        color = [0, 255, 255]
     pts = sortpts(polygons, i)
     top = pts[0]
     mid = pts[1]
@@ -359,16 +371,24 @@ def draw_scanline(x0, y0, z0, x1, y1, z1, screen, zbuffer, color):
     #swap points if going right -> left
     if x0 > x1:
         xt = x0
-        yt = y0
+        # yt = y0
+        zt = z0
         x0 = x1
-        y0 = y1
+        # y0 = y1
+        z0 = z1
         x1 = xt
-        y1 = yt
+        # y1 = yt
+        z1 = zt
     x = x0
-    y = y0
-    while (x <= math.ceil(x1)):
-        plot(screen, zbuffer, color, int(x), int(y), 0)
+    z = z0
+    pixels = int(x1) - int(x) + 1
+    dz = (z1 - z0) / pixels
+    while (int(x) < int(x1)):
+        if(z > zbuffer[int(y0)][int(x)]):
+            plot(screen, zbuffer, color, int(x), int(y0), 0)
+            zbuffer[int(y0)][int(x)] = z
         x+=1
+        z+=dz
 
 def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
 
